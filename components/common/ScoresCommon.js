@@ -14,7 +14,8 @@ const DARK_GREY = "#605F5E";
 const LIGHT_GREY = "#E2E2E2";
 
 export default function ScoresCommon({url, score, setScore}) {
-    const [userId] = useLocalStorage('userId', 'user-1');
+    const randomId = crypto.randomUUID();
+    const [userId] = useLocalStorage('userId', randomId);
     useEffect(
         () => {
             fecthScores(url, userId, setScore);
@@ -43,8 +44,7 @@ export default function ScoresCommon({url, score, setScore}) {
     )
 }
 
-const fecthScores = async (url, userId, setScores) => {
-    console.log('fetching total scores')
+export const fecthScores = async (url, userId, setScores) => {
     const response = await fetch(
         url,
         {
@@ -62,7 +62,6 @@ const fecthScores = async (url, userId, setScores) => {
 
     const data = await response.json();
     setScores(data);
-    console.log(data);
 }
 
 

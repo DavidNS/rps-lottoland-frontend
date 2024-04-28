@@ -5,6 +5,7 @@ function getFromLocalStorage(key, defaultValue) {
     if(savedValue){
         return JSON.parse(savedValue);
     }else {
+        setValueToLocalStorage(key, defaultValue);
         return defaultValue;
     }
 }
