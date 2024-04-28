@@ -1,7 +1,20 @@
 import { useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import useLocalStorage from "../hooks/useLocalStorage";
+import ScoresCommon from "../common/ScoresCommon";
+import { Link } from 'expo-router';
 
+
+const DARK_BLUE = '#0A2463';
+const LIGHT_BLUE = "#247BA0";
+
+const DARK_RED = "#FB3640";
+const LIGHT_RED = "#FFD3D5"
+
+const DARK_GREY = "#605F5E";
+const LIGHT_GREY = "#E2E2E2";
+
+const scoresPlayersUrl = 'http://localhost:8080/v1/scores/players'
 
 export default function Games() {
     const [userId] = useLocalStorage('userId', 'user-1');
@@ -12,46 +25,42 @@ export default function Games() {
         fecthGamesScoresPlayers(setScore, setGame, userId);
     }
 
+    const onResetPlayerGames = (e) => {
+        fecthResetScoresPlayers(setScore, userId);
+        setGame(emptyGame);
+    }
+
     return (
-    <View id="ScoresGamesContainer" style={styles.scoresGamesContainer} >
-        <View id="ScoresContainer" style={styles.scoresContainer}>
-            <View id="Player1ScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.player1Wins}</Text>
-                <Text>Player 1 Wins</Text>
-            </View>
-            <View id="Player2ScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.player2Wins}</Text>
-                <Text>Player 2 Wins</Text>
-            </View>
-            <View id="DrawsScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.draws}</Text>
-                <Text>Draws</Text>
-            </View>
-            <View id="TotalGamesScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.totalGames}</Text>
-                <Text>Total games</Text>
-            </View>
-        </View>
+    <View id="ScoresGamesPressablesContainer" style={styles.scoresGamesPressablesContainer} >
+        <ScoresCommon url={scoresPlayersUrl} score={score} setScore={setScore}></ScoresCommon>
         <View id="GamesContainer" style={styles.gamesContainer}>
             <View id="GamesResultsContainer" style={styles.gamesResultsContainer}>
                 <View id="Player1GameContainer" style={styles.valueAndLabelContainers}>
-                    <Text>{game.player1Result}</Text>
-                    <Text>Player 1</Text>
+                    <Text style={{...styles.value, backgroundColor: LIGHT_BLUE}}>{game.player1Result}</Text>
+                    <Text style={{...styles.label, backgroundColor: LIGHT_BLUE}}>Player 1</Text>
                 </View>
                 <View id="ResultGameContainer" style={styles.valueAndLabelContainers}>
-                    <Text>{game.gameResult}</Text>
-                    <Text>Result</Text>
+                    <Text style={{...styles.value, backgroundColor: LIGHT_GREY}}>{game.gameResult}</Text>
+                    <Text style={{...styles.label, backgroundColor: LIGHT_GREY}}>Result</Text>
                 </View>
                 <View id="Player2GameContainer" style={styles.valueAndLabelContainers}>
-                    <Text>{game.player2Result}</Text>
-                    <Text>Player 2</Text>
+                    <Text style={{...styles.value, backgroundColor: DARK_GREY, color: 'white'}}>{game.player2Result}</Text>
+                    <Text style={{...styles.label, backgroundColor: DARK_GREY, color: 'white'}}>Player 2</Text>
                 </View>
             </View>
-            <View id="NewGamesContainer" style={styles.newGamesContainer}>
-                <Pressable style={styles.newGamesPressable} onPress={onNewGamePress}>
-                    <Text style={styles.newGamesPressableText}>New Game</Text>
+        </View>
+        <View id="PressablesContainer" style={styles.pressablesContainer}>
+            <Pressable style={{...styles.pressable }} onPress={onNewGamePress}>
+                <Text style={{...styles.pressableText, backgroundColor: DARK_BLUE, color: 'white'}}>New Game</Text>
+            </Pressable>
+            <Pressable style={{...styles.pressable }} onPress={onResetPlayerGames}>
+                <Text style={{...styles.pressableText, backgroundColor: DARK_RED}}>Reset Player Games</Text>
+            </Pressable>
+            <Link href="/scores" asChild>
+                <Pressable style={{...styles.pressable }} >
+                    <Text style={{...styles.pressableText, backgroundColor: LIGHT_GREY}}>Total Scores</Text>
                 </Pressable>
-            </View>
+            </Link>
         </View>
     </View>
     )
@@ -71,13 +80,35 @@ const emptyGame = {
 	player2Result: "NONE"
 }
 
-const fecthScoresPlayers = async (setScores) => {
-    console.log('fetching player scores')
-    const response = await fetch(
-        'http://localhost:8080/v1/scores/players',
+const fecthGamesScoresPlayers = async (setScores, setGames, userId) => {
+    console.log('fetching new player games scores')
+    const response = await fetch('http://localhost:8080/v1/games/players',
         {
             method: 'GET',
+            headers: {
+                'x-device-id' : userId
+            }
+        }
+    );
 
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    setScores(data.scoreOut);
+    setGames(data.gameOut);
+    console.log(data);
+}
+
+const fecthResetScoresPlayers = async (setScores, userId) => {
+    console.log('fetching new player games scores')
+    const response = await fetch('http://localhost:8080/v1/scores/players',
+        {
+            method: 'DELETE',
+            headers: {
+                'x-device-id' : userId
+            }
         }
     );
 
@@ -90,49 +121,21 @@ const fecthScoresPlayers = async (setScores) => {
     console.log(data);
 }
 
-const fecthGamesScoresPlayers = async (setScores, setGames, userId) => {
-    console.log('fetching new player games scores')
-    const response = await fetch('http://localhost:8080/v1/games/players',
-        {
-            method: 'GET',
-            headers: {
-                'x-device-id' : userId
-            }
-        });
-
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    setScores(data.scoreOut);
-    setGames(data.gameOut);
-    console.log(data);
-}
 
 const styles = StyleSheet.create({
-    scoresGamesContainer: {
+    scoresGamesPressablesContainer: {
       flex: 1,
       width: '100%',
+      height: '100%',
       overflow: 'auto',
       display: 'flex',
-      backgroundColor: 'red',
       alignItems: 'center',
       justifyContent: 'center',
-    },
-    scoresContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        width: '100%',
-        overflow: 'auto',
-        display: 'flex',
-        backgroundColor: 'yellow',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     gamesContainer: {
         flex: 1,
         width: '100%',
+        height: '100%',
         overflow: 'auto',
         display: 'flex',
         backgroundColor: 'blue',
@@ -141,41 +144,72 @@ const styles = StyleSheet.create({
     },
     gamesResultsContainer: {
         flex: 1,
-        flexDirection: 'row',
         width: '100%',
+        height: '100%',
+        flexDirection: 'row',
         overflow: 'auto',
         display: 'flex',
-        backgroundColor: 'pink',
         alignItems: 'center',
         justifyContent: 'center',
     },
     valueAndLabelContainers: {
         flex: 1,
-        backgroundColor: 'blue',
         width: '100%',
-        fontSize: '100px',
+        height: '100%',
         textAlign: 'center',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    newGamesContainer: {
+    value: {
+        flex: 9,
+        width: '100%',
+        height: '100%',
+        fontSize: '5rem',
+        alignContent: "center",
+        textAlign: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    label: {
         flex: 1,
         width: '100%',
-        overflow: 'auto',
-        display: 'flex',
-        backgroundColor: 'red',
+        height: '100%',
+        fontSize: '2rem',
+        alignContent: "center",
+        textAlign: 'center',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    newGamesPressable: {
-        backgroundColor: 'green',
+    pressablesContainer: {
+        flex: 1,
         width: '100%',
+        height: '100%',
         overflow: 'auto',
         display: 'flex',
+        textAlign: 'center',
         alignItems: 'center',
+        alignContent: "center",
         justifyContent: 'center',
     },
-    newGamesPressableText: {
-        fontSize: '100px',
+    pressable: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        overflow: 'auto',
+        display: 'flex',
+        textAlign: 'center',
+        alignItems: 'center',
+        alignContent: "center",
+        justifyContent: 'center',
+    },
+    pressableText: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        textAlign: 'center',
+        alignItems: 'center',
+        alignContent: "center",
+        justifyContent: 'center',
+        fontSize: '2rem',
     }
   });
