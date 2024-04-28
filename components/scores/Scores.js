@@ -1,35 +1,31 @@
 import { useState, useEffect } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, Pressable } from "react-native";
+import { Link } from 'expo-router';
+import ScoresCommon from "../common/ScoresCommon";
 
+
+const DARK_BLUE = '#0A2463';
+const LIGHT_BLUE = "#247BA0";
+
+const DARK_RED = "#FB3640";
+const LIGHT_RED = "#FFD3D5"
+
+const DARK_GREY = "#605F5E";
+const LIGHT_GREY = "#E2E2E2";
+
+const scoresTotalsUrl = 'http://localhost:8080/v1/scores/totals'
 
 export default function Scores() {
     const [score, setScore] = useState(emptyScore);
-
-    useEffect(
-        () => {
-            fecthScoresTotals(setScore)
-        }
-    )
-
     return (
-    <View id="ScoresGamesContainer" style={styles.scoresGamesContainer} >
-        <View id="ScoresContainer" style={styles.scoresContainer}>
-            <View id="Player1ScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.player1Wins}</Text>
-                <Text>Player 1 Wins</Text>
-            </View>
-            <View id="Player2ScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.player2Wins}</Text>
-                <Text>Player 2 Wins</Text>
-            </View>
-            <View id="DrawsScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.draws}</Text>
-                <Text>Draws</Text>
-            </View>
-            <View id="TotalGamesScoreContainer" style={styles.valueAndLabelContainers}>
-                <Text>{score.totalGames}</Text>
-                <Text>Total games</Text>
-            </View>
+    <View id="ScoresAndPressablesContainer" style={styles.scoresAndPressablesContainer}>
+        <ScoresCommon url={scoresTotalsUrl} score={score} setScore={setScore}/>
+        <View id="PressablesContainer" style={styles.pressablesContainer}>
+            <Link href="/" asChild>
+                <Pressable style={{...styles.pressable, backgroundColor: LIGHT_BLUE }}>
+                    <Text style={{...styles.pressableText }}>Back to games</Text>
+                </Pressable>
+            </Link>
         </View>
     </View>
     )
@@ -42,53 +38,46 @@ const emptyScore = {
 	draws: 0
 }
 
-const fecthScoresTotals = async (setScores) => {
-    console.log('fetching total scores')
-    const response = await fetch(
-        'http://localhost:8080/v1/scores/totals',
-        {
-            method: 'GET',
-
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    setScores(data);
-    console.log(data);
-}
-
 
 const styles = StyleSheet.create({
-    scoresGamesContainer: {
-      flex: 1,
-      width: '100%',
-      overflow: 'auto',
-      display: 'flex',
-      backgroundColor: 'red',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    scoresContainer: {
+    scoresAndPressablesContainer: {
         flex: 1,
-        flexDirection: 'row',
         width: '100%',
+        height: '100%',
         overflow: 'auto',
         display: 'flex',
-        backgroundColor: 'yellow',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    valueAndLabelContainers: {
-        flex: 1,
-        backgroundColor: 'blue',
+    pressablesContainer: {
+        flex: 0.1,
         width: '100%',
-        fontSize: '100px',
-        textAlign: 'center',
+        height: '100%',
+        overflow: 'auto',
+        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    pressable: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        overflow: 'auto',
+        display: 'flex',
+        textAlign: 'center',
+        alignItems: 'center',
+        alignContent: "center",
+        justifyContent: 'center',
+    },
+    pressableText: {
+        flex: 1,
+        textAlign: 'center',
+        alignItems: 'center',
+        alignContent: "center",
+        justifyContent: 'center',
+        width: '100%',
+        height: '100%',
+        fontSize: '3em',
     }
+    
   });
