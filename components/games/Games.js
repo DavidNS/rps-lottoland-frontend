@@ -17,7 +17,8 @@ const LIGHT_GREY = "#E2E2E2";
 const scoresPlayersUrl = 'http://localhost:8080/v1/scores/players'
 
 export default function Games() {
-    const [userId] = useLocalStorage('userId', 'user-1');
+    const randomId = crypto.randomUUID();
+    const [userId] = useLocalStorage('userId', randomId);
     const [score, setScore] = useState(emptyScore);
     const [game, setGame] = useState(emptyGame);
 
@@ -81,7 +82,6 @@ const emptyGame = {
 }
 
 const fecthGamesScoresPlayers = async (setScores, setGames, userId) => {
-    console.log('fetching new player games scores')
     const response = await fetch('http://localhost:8080/v1/games/players',
         {
             method: 'GET',
@@ -98,11 +98,9 @@ const fecthGamesScoresPlayers = async (setScores, setGames, userId) => {
     const data = await response.json();
     setScores(data.scoreOut);
     setGames(data.gameOut);
-    console.log(data);
 }
 
 const fecthResetScoresPlayers = async (setScores, userId) => {
-    console.log('fetching new player games scores')
     const response = await fetch('http://localhost:8080/v1/scores/players',
         {
             method: 'DELETE',
@@ -118,7 +116,6 @@ const fecthResetScoresPlayers = async (setScores, userId) => {
 
     const data = await response.json();
     setScores(data);
-    console.log(data);
 }
 
 
